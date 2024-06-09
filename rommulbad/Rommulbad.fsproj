@@ -6,10 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Database.fs" />
-    <Compile Include="Model.fs" />
-    <Compile Include="Store.fs" />
-    <Compile Include="Web.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
@@ -18,6 +14,11 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Thoth.Json.Giraffe" Version="6.0.0-beta-001" />
     <PackageReference Include="Thoth.Json.Net" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.fsproj" />
+    <ProjectReference Include="..\Service\Service.fsproj" />
   </ItemGroup>
 
 </Project>

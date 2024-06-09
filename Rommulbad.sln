@@ -5,6 +5,14 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Rommulbad", "Rommulbad\Rommulbad.fsproj", "{958B9488-B020-478B-A0AD-D4429B8C90CE}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Model", "Model\Model.fsproj", "{7D224E67-6725-4A1C-A024-8333B71F591A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Application", "Application\Application.fsproj", "{E2A178CD-6C52-40F7-9543-3F4F4A8DEB77}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Service", "Service\Service.fsproj", "{18896A6F-CFE4-447E-85F6-FB1FC842FC9D}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Database", "Database\Database.fsproj", "{6A7D8891-E956-4618-BD5A-BE70005BD615}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +26,21 @@ Global
 		{958B9488-B020-478B-A0AD-D4429B8C90CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{958B9488-B020-478B-A0AD-D4429B8C90CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{958B9488-B020-478B-A0AD-D4429B8C90CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D224E67-6725-4A1C-A024-8333B71F591A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D224E67-6725-4A1C-A024-8333B71F591A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D224E67-6725-4A1C-A024-8333B71F591A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D224E67-6725-4A1C-A024-8333B71F591A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2A178CD-6C52-40F7-9543-3F4F4A8DEB77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A178CD-6C52-40F7-9543-3F4F4A8DEB77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2A178CD-6C52-40F7-9543-3F4F4A8DEB77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A178CD-6C52-40F7-9543-3F4F4A8DEB77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18896A6F-CFE4-447E-85F6-FB1FC842FC9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18896A6F-CFE4-447E-85F6-FB1FC842FC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18896A6F-CFE4-447E-85F6-FB1FC842FC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18896A6F-CFE4-447E-85F6-FB1FC842FC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A7D8891-E956-4618-BD5A-BE70005BD615}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A7D8891-E956-4618-BD5A-BE70005BD615}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A7D8891-E956-4618-BD5A-BE70005BD615}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A7D8891-E956-4618-BD5A-BE70005BD615}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
