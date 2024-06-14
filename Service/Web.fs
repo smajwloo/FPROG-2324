@@ -51,6 +51,24 @@ let addSession (name: string) : HttpHandler =
                 return! text "OK" next ctx
         }
 
+let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
+    fun next ctx ->
+        task {
+            let sessionStore = ctx.GetService<ISessionStore>()
+            let eligibleSessions = getEligibleSessions sessionStore name diploma
+            let total = getTotalMinutes eligibleSessions
+            return! ThothSerializer.RespondJson total Encode.int next ctx
+        }
+
+let getTotalMinutes (name: string) : HttpHandler =
+    fun next ctx ->
+        task {
+            let sessionStore = ctx.GetService<ISessionStore>()
+            let sessions = getSessions sessionStore name
+            let total = getTotalMinutes sessions
+            return! ThothSerializer.RespondJson total Encode.int next ctx
+        }
+
 let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
@@ -59,33 +77,12 @@ let getSessions (name: string) : HttpHandler =
             return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
         }
 
-let getTotalMinutes (name: string) : HttpHandler =
-    fun next ctx ->
-        task {
-            let store = ctx.GetService<Store>()
-
-            let total =
-                InMemoryDatabase.filter (fun (n, _, _, _) -> n = name) store.sessions
-                |> Seq.map (fun (_, _, _, a) -> a)
-                |> Seq.sum
-
-            return! ThothSerializer.RespondJson total Encode.int next ctx
-        }
-
 let getEligibleSessions (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
             let eligibleSessions = getEligibleSessions sessionStore name diploma
             return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
-        }
-
-let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
-    fun next ctx ->
-        task {
-            let sessionStore = ctx.GetService<ISessionStore>()
-            let total = getTotalEligibleMinutes sessionStore name diploma
-            return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
 
