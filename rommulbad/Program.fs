@@ -1,4 +1,5 @@
 ﻿open System
+open Microsoft.AspNetCore.Session
 open Thoth.Json.Giraffe
 open Thoth.Json.Net
 open Microsoft.AspNetCore.Builder
@@ -8,8 +9,10 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Rommulbad
 open Rommulbad.Store
-open Database.CandidateStore
 open Application.Candidate
+open Application.Session
+open Database.CandidateStore
+open Database.SessionStore
 
 let configureApp (app: IApplicationBuilder) =
     // Add Giraffe to the ASP.NET Core pipeline
@@ -21,6 +24,7 @@ let configureServices (services: IServiceCollection) =
         .AddGiraffe()
         .AddSingleton<Store>(Store())
         .AddSingleton<ICandidateStore, CandidateStore>()
+        .AddSingleton<ISessionStore, SessionStore>()
         .AddSingleton<Json.ISerializer>(ThothSerializer(skipNullField = false, caseStrategy = CaseStrategy.CamelCase))
     |> ignore
 

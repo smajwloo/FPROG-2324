@@ -1,6 +1,7 @@
 module Rommulbad.Web
 
 open Application.Candidate
+open Application.Session
 open Model.Candidate
 open Model.Session
 open Model.Guardian
@@ -60,11 +61,9 @@ let encodeSession (_, deep, date, minutes) =
 let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
-            let store = ctx.GetService<Store>()
-
-            let sessions = InMemoryDatabase.filter (fun (n, _, _, _) -> n = name) store.sessions
-
-            return! ThothSerializer.RespondJsonSeq sessions encodeSession next ctx
+            let store = ctx.GetService<ISessionStore>()
+            let sessions = getSessions (store, name)
+            return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
         }
 
 let getTotalMinutes (name: string) : HttpHandler =
