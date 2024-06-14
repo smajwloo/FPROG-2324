@@ -1,6 +1,9 @@
 module Rommulbad.Web
 
-open Rommulbad.Model
+open Application.Candidate
+open Model.Candidate
+open Model.Session
+open Model.Guardian
 open Rommulbad.Database
 open Rommulbad.Store
 open Giraffe
@@ -11,15 +14,8 @@ open Thoth.Json.Giraffe
 let getCandidates: HttpHandler =
     fun next ctx ->
         task {
-            let store = ctx.GetService<Store>()
-
-            let candidates =
-                InMemoryDatabase.all store.candidates
-                |> Seq.map (fun (name, _, gId, dpl) ->
-                    { Candidate.Name = name
-                      GuardianId = gId
-                      Diploma = dpl })
-
+            let candidateStore = ctx.GetService<ICandidateStore>()
+            let candidates = getCandidates candidateStore
             return! ThothSerializer.RespondJsonSeq candidates Candidate.encode next ctx
         }
 

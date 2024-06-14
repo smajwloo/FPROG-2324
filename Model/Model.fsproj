@@ -6,7 +6,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Model.fs" />
+        <Compile Include="Candidate.fs" />
+        <Compile Include="Session.fs" />
+        <Compile Include="Guardian.fs" />
     </ItemGroup>
 
     <ItemGroup>
