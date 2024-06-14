@@ -62,7 +62,7 @@ let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessions = getSessions (sessionStore, name)
+            let sessions = getSessions sessionStore name
             return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
         }
 
@@ -84,26 +84,10 @@ let getEligibleSessions (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
 
-            let store = ctx.GetService<Store>()
-
-            let shallowOk =
-                match diploma with
-                | "A" -> true
-                | _ -> false
-
-            let minMinutes =
-                match diploma with
-                | "A" -> 1
-                | "B" -> 10
-                | _ -> 15
-
-            let filter (n, d, _, a) = (d || shallowOk) && (a >= minMinutes)
-
-
-            let sessions = InMemoryDatabase.filter filter store.sessions
-
-            return! ThothSerializer.RespondJsonSeq sessions encodeSession next ctx
-
+            let sessionStore = ctx.GetService<ISessionStore>()
+            let eligibleSessions = getEligibleSessions sessionStore name diploma
+            
+            return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
         }
 
 let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
