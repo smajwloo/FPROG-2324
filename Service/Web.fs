@@ -51,13 +51,6 @@ let addSession (name: string) : HttpHandler =
                 return! text "OK" next ctx
         }
 
-let encodeSession (_, deep, date, minutes) =
-    Encode.object
-        [ "date", Encode.datetime date
-          "deep", Encode.bool deep
-          "minutes", Encode.int minutes ]
-
-
 let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
@@ -79,14 +72,11 @@ let getTotalMinutes (name: string) : HttpHandler =
             return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
-
 let getEligibleSessions (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
-
             let sessionStore = ctx.GetService<ISessionStore>()
             let eligibleSessions = getEligibleSessions sessionStore name diploma
-            
             return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
         }
 
@@ -97,7 +87,6 @@ let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
             let total = getTotalEligibleMinutes sessionStore name diploma
             return! ThothSerializer.RespondJson total Encode.int next ctx
         }
-
 
 
 let routes: HttpHandler =
