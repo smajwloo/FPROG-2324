@@ -61,8 +61,8 @@ let encodeSession (_, deep, date, minutes) =
 let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
-            let store = ctx.GetService<ISessionStore>()
-            let sessions = getSessions (store, name)
+            let sessionStore = ctx.GetService<ISessionStore>()
+            let sessions = getSessions (sessionStore, name)
             return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
         }
 
