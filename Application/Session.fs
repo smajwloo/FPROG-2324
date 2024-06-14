@@ -13,3 +13,8 @@ let getEligibleSessions (sessionStore: ISessionStore) (name: string) (diploma: s
     let diploma = Diploma.make diploma
     
     Session.eligibleSessions sessions diploma
+    
+let getTotalEligibleMinutes (sessionStore: ISessionStore) (name: string) (diploma: string) : int =
+    getEligibleSessions sessionStore name diploma
+    |> Seq.map (_.Minutes)
+    |> Seq.sum
