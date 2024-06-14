@@ -13,3 +13,10 @@ type CandidateStore (store: Store) =
                         { Candidate.Name = name
                           GuardianId = gId
                           Diploma = dpl })
+                    
+        member this.GetCandidate (name: string) =
+            InMemoryDatabase.lookup name store.candidates
+                    |> Option.map (fun (name, _, gId, dpl) ->
+                        { Candidate.Name = name
+                          GuardianId = gId
+                          Diploma = dpl })
