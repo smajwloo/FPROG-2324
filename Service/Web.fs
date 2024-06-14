@@ -34,21 +34,17 @@ let getCandidate (name: string) : HttpHandler =
 let addSession (name: string) : HttpHandler =
     fun next ctx ->
         task {
-
             let! session = ThothSerializer.ReadBody ctx Session.decode
 
             match session with
             | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-            | Ok { Deep = deep
-                   Date = date
-                   Minutes = minutes } ->
-                let store = ctx.GetService<Store>()
+            | Ok session ->
+                let sessionStore = ctx.GetService<ISessionStore>()
 
-                InMemoryDatabase.insert (name, date) (name, deep, date, minutes) store.sessions
-                |> ignore
-
-
-                return! text "OK" next ctx
+                let result = addSession sessionStore name session
+                match result with
+                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                | Ok _ -> return! text "OK" next ctx
         }
 
 let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =

@@ -4,6 +4,7 @@ open Model.Session
 
 type ISessionStore =
     abstract getSessions : string -> seq<Session>
+    abstract addSession : string -> Session -> Result<unit, string>
     
 let getSessions (sessionStore: ISessionStore) (name: string) : seq<Session> =
     sessionStore.getSessions name
@@ -17,3 +18,6 @@ let getTotalMinutes (sessions: seq<Session>) : int =
     sessions
     |> Seq.map (_.Minutes)
     |> Seq.sum
+    
+let addSession (sessionStore: ISessionStore) (name: string) (session: Session) : Result<unit, string> =
+    sessionStore.addSession name session

@@ -14,3 +14,9 @@ type SessionStore (store: Store) =
                         { Session.Deep = deep
                           Date = date
                           Minutes = minutes })
+                    
+        member this.addSession (name: string) (session: Session) =
+            let result = InMemoryDatabase.insert (name, session.Date) (name, session.Deep, session.Date, session.Minutes) store.sessions
+            match result with
+            | Ok _ -> Ok ()
+            | Error _ -> Error "Could not add session to store"
