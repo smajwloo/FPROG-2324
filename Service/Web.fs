@@ -22,8 +22,8 @@ let getCandidates: HttpHandler =
 let getCandidate (name: string) : HttpHandler =
     fun next ctx ->
         task {
-            let store = ctx.GetService<ICandidateStore>()
-            let candidate = getCandidate (store, name)
+            let candidateStore = ctx.GetService<ICandidateStore>()
+            let candidate = getCandidate (candidateStore, name)
             
             match candidate with
             | None -> return! RequestErrors.NOT_FOUND "Employee not found!" next ctx
