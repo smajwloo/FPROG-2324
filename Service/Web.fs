@@ -55,8 +55,8 @@ let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok sessions ->
-                let eligibleSessions = getEligibleSessions sessions diploma
-                let total = getTotalMinutes eligibleSessions
+                let eligibleSessions = Session.getEligibleSessions sessions diploma
+                let total = Session.getTotalMinutes eligibleSessions
                 return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
@@ -69,7 +69,7 @@ let getTotalMinutes (name: string) : HttpHandler =
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok sessions ->
-                let total = getTotalMinutes sessions
+                let total = Session.getTotalMinutes sessions
                 return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
