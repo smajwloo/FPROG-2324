@@ -11,15 +11,23 @@ let sessionsIsEmpty sessions =
     match Seq.isEmpty sessions with
     | true -> Error "No sessions found!"
     | false -> Ok sessions
+    
+let filterSessionsByName name sessions =
+    sessions
+    |> Seq.filter (fun (n, _, _, _) -> n = name)
+    
+let mapSessions sessions =
+   sessions
+   |> Seq.map (fun (_, deep, date, minutes) ->
+       { Session.Deep = deep
+         Date = date
+         Minutes = minutes })
 
 let getSessionsOfCandidate (sessionStore: ISessionStore) (name: string) : Result<seq<Session>, string> =
     let sessions = sessionStore.getSessions ()
     let mappedSessions = sessions
-                        |> Seq.filter (fun (n, _, _, _) -> n = name)
-                        |> Seq.map (fun (_, deep, date, minutes) ->
-                            { Session.Deep = deep
-                              Date = date
-                              Minutes = minutes })
+                        |> filterSessionsByName name
+                        |> mapSessions
     sessionsIsEmpty mappedSessions
     
 let getEligibleSessions (sessions: seq<Session>) (diploma: string) : seq<Session> =
