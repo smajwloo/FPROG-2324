@@ -50,7 +50,7 @@ let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessions sessionStore name
+            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
 
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -64,7 +64,7 @@ let getTotalMinutes (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessions sessionStore name
+            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -77,7 +77,7 @@ let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessions sessionStore name
+            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -88,7 +88,7 @@ let getEligibleSessions (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessions sessionStore name
+            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
