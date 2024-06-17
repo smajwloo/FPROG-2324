@@ -1,12 +1,11 @@
 module Rommulbad.Web
 
+open Application
 open Application.Candidate
 open Application.Session
 open Model.Candidate
 open Model.Session
 open Model.Guardian
-open Rommulbad.Database
-open Rommulbad.Store
 open Giraffe
 open Thoth.Json.Net
 open Thoth.Json.Giraffe
@@ -16,7 +15,7 @@ let getCandidates: HttpHandler =
     fun next ctx ->
         task {
             let candidateStore = ctx.GetService<ICandidateStore>()
-            let candidates = getCandidates candidateStore
+            let candidates = Candidate.getCandidates candidateStore
             return! ThothSerializer.RespondJsonSeq candidates Candidate.encode next ctx
         }
 
@@ -24,10 +23,10 @@ let getCandidate (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let candidateStore = ctx.GetService<ICandidateStore>()
-            let candidate = getCandidate (candidateStore, name)
+            let candidate = Candidate.getCandidate (candidateStore, name)
             
             match candidate with
-            | None -> return! RequestErrors.NOT_FOUND "Employee not found!" next ctx
+            | None -> return! RequestErrors.NOT_FOUND "Candidate not found!" next ctx
             | Some candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
         }
 
@@ -51,34 +50,51 @@ let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let eligibleSessions = getEligibleSessions sessionStore name diploma
-            let total = getTotalMinutes eligibleSessions
-            return! ThothSerializer.RespondJson total Encode.int next ctx
+            let sessionsResult = Session.getSessions sessionStore name
+
+            match sessionsResult with
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok sessions ->
+                let eligibleSessions = getEligibleSessions sessions diploma
+                let total = getTotalMinutes eligibleSessions
+                return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
 let getTotalMinutes (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessions = getSessions sessionStore name
-            let total = getTotalMinutes sessions
-            return! ThothSerializer.RespondJson total Encode.int next ctx
+            let sessionsResult = Session.getSessions sessionStore name
+            
+            match sessionsResult with
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok sessions ->
+                let total = getTotalMinutes sessions
+                return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
 let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessions = getSessions sessionStore name
-            return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
+            let sessionsResult = Session.getSessions sessionStore name
+            
+            match sessionsResult with
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok sessions -> return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
         }
 
 let getEligibleSessions (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let eligibleSessions = getEligibleSessions sessionStore name diploma
-            return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
+            let sessionsResult = Session.getSessions sessionStore name
+            
+            match sessionsResult with
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok sessions ->
+                let eligibleSessions = getEligibleSessions sessions diploma
+                return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
         }
 
 
