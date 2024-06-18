@@ -23,9 +23,18 @@ let getGuardians (store: IGuardianStore) : Result<seq<Guardian>, string> =
     let mappedGuardians = guardians
                          |> mapGuardians
     guardiansIsEmpty mappedGuardians
+    
+let validateGuardian (guardian: Guardian) =
+    let idValidation = Guardian.validateGuardianId guardian.Id
+    let nameValidation = Guardian.validateGuardianName guardian.Name
+    match idValidation, nameValidation with
+    | Ok (), Ok () -> Ok ()
+    | Error idError, Error nameError -> Error (idError + " and " + nameError)
+    | Error error, _ -> Error error
+    | _, Error error -> Error error
 
 let addGuardian (store: IGuardianStore) (guardian: Guardian) =
-    let validatedGuardian = Guardian.validateGuardian guardian
+    let validatedGuardian = validateGuardian guardian
     match validatedGuardian with
     | Error error -> Error error
     | Ok _ -> store.addGuardian guardian
