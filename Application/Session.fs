@@ -17,12 +17,18 @@ let filterSessionsByName name sessions =
     sessions
     |> Seq.filter (fun (n, _, _, _) -> n = name)
 
+let mapSessions sessions name =
+    sessions
+    |> filterSessionsByName name
+    |> Seq.map (fun (_, deep, date, minutes) -> Session.make deep date minutes)
+    |> Seq.choose (function
+        | Ok session -> Some session
+        | Error _ -> None
+    )
 
 let getSessionsOfCandidate (sessionStore: ISessionStore) (name: string) : Result<seq<Session>, string> =
     let sessions = sessionStore.getSessions ()
-    let mappedSessions = sessions
-                        |> filterSessionsByName name
-                        |> Seq.map (fun (_, deep, date, minutes) -> Session.make deep date minutes)
+    let mappedSessions = mapSessions sessions name
     sessionsIsEmpty mappedSessions
     
 let getEligibleSessions (sessions: seq<Session>) (diploma: string) : seq<Session> =

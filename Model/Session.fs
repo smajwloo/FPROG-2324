@@ -15,10 +15,11 @@ type Session =
       Minutes: int }
 
 module Session =
-    let make deep date minutes =
-        { Deep = deep
-          Date = date
-          Minutes = minutes }
+    let make rawDeep rawDate rawMinutes =
+        rawMinutes
+        |> Validator.validateSessionLength
+        |> Result.bind (fun _ -> Validator.validateDate rawDate)
+        |> Result.map (fun _ -> { Deep = rawDeep; Date = rawDate; Minutes = rawMinutes })
     
     let encode: Encoder<Session> =
         fun session ->

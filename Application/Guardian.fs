@@ -18,15 +18,17 @@ let guardianExists (guardian: Option<Guardian>) : Result<unit, string> =
     | None -> Error "Guardian not found!"
     | Some _ -> Ok ()
     
+let mapGuardians guardians =
+    guardians
+    |> Seq.map (fun (id, name) -> Guardian.make id name)
+    |> Seq.choose (function
+        | Ok guardian -> Some guardian
+        | Error _ -> None
+    )
+    
 let getGuardians (store: IGuardianStore) : Result<seq<Guardian>, string> =
     let guardians = store.getGuardians ()
-    let mappedGuardians = guardians
-                         |> Seq.map (fun (id, name) -> Guardian.make id name)
-                         |> Seq.choose (function
-                            | Ok guardian -> Some guardian
-                            | Error _ -> None
-                         )
-
+    let mappedGuardians = mapGuardians guardians
     guardiansIsEmpty mappedGuardians
     
 let getGuardian (store: IGuardianStore) (id: string) : Option<Guardian> =
