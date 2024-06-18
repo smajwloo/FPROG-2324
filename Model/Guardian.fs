@@ -2,7 +2,6 @@ module Model.Guardian
 
 open Thoth.Json.Net
 open Candidate
-open Validator
 
 /// A guardian has an Id (3 digits followed by a dash and 4 letters),
 /// a Name (only letters and spaces, but cannot contain two or more consecutive spaces),

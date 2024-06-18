@@ -1,5 +1,6 @@
 module Application.Session
 
+open Model.Diploma
 open Model.Session
 
 type ISessionStore =
@@ -15,19 +16,13 @@ let sessionsIsEmpty sessions =
 let filterSessionsByName name sessions =
     sessions
     |> Seq.filter (fun (n, _, _, _) -> n = name)
-    
-let mapSessions sessions =
-   sessions
-   |> Seq.map (fun (_, deep, date, minutes) ->
-       { Session.Deep = deep
-         Date = date
-         Minutes = minutes })
+
 
 let getSessionsOfCandidate (sessionStore: ISessionStore) (name: string) : Result<seq<Session>, string> =
     let sessions = sessionStore.getSessions ()
     let mappedSessions = sessions
                         |> filterSessionsByName name
-                        |> mapSessions
+                        |> Seq.map (fun (_, deep, date, minutes) -> Session.make deep date minutes)
     sessionsIsEmpty mappedSessions
     
 let getEligibleSessions (sessions: seq<Session>) (diploma: string) : seq<Session> =

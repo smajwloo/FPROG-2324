@@ -2,6 +2,7 @@ module Model.Session
 
 open Thoth.Json.Net
 open System
+open Model.Diploma
 
 /// Swimming session registered on a specific date
 ///
@@ -12,21 +13,13 @@ type Session =
     { Deep: bool
       Date: DateTime
       Minutes: int }
-    
-type Diploma = 
-    private | A
-    | B
-    | C
-
-
-module Diploma =
-    let make rawDiploma =
-        match rawDiploma with
-        | "A" -> A
-        | "B" -> B
-        | _ -> C
 
 module Session =
+    let make deep date minutes =
+        { Deep = deep
+          Date = date
+          Minutes = minutes }
+    
     let encode: Encoder<Session> =
         fun session ->
             Encode.object

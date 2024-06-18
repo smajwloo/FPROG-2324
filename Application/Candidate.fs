@@ -12,24 +12,17 @@ let filterCandidateByGuardianId (guardianId: string) (name: string) (candidates:
     candidates
     |> List.filter (fun candidate -> candidate.GuardianId = guardianId && candidate.Name = name)
     
-let mapCandidate name dateOfBirth guardianId diploma : Candidate =
-    { Candidate.Name = name;
-        DateOfBirth = dateOfBirth;
-        GuardianId = guardianId;
-        Diploma = diploma }
-
-    
 let getCandidates (candidateStore: ICandidateStore) : List<Candidate> =
     let candidates = candidateStore.getCandidates ()
     candidates
-    |> Seq.map (fun (name, dateOfBirth, guardianId, diploma) -> mapCandidate name dateOfBirth guardianId diploma)
+    |> Seq.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId diploma)
     |> List.ofSeq
     
     
 let getCandidate (candidateStore: ICandidateStore) (name: string) : Option<Candidate> =
     let candidate = candidateStore.getCandidate name
     candidate
-    |> Option.map (fun (name, dateOfBirth, guardianId, diploma) -> mapCandidate name dateOfBirth guardianId diploma)
+    |> Option.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId diploma)
     
 let validateCandidate (candidate: Candidate) =
     Candidate.validateName candidate.Name

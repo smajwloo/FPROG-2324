@@ -1,5 +1,6 @@
 module Database.CandidateStore
 
+open Model.Diploma
 open Model.Candidate
 open Rommulbad.Database
 open Rommulbad.Store
@@ -14,7 +15,11 @@ type CandidateStore (store: Store) =
             InMemoryDatabase.lookup name store.candidates
             
         member this.addCandidate (candidate: Candidate) =
-            let result = InMemoryDatabase.insert candidate.Name (candidate.Name, candidate.DateOfBirth, candidate.GuardianId, candidate.Diploma) store.candidates
-            match result with
-            | Ok _ -> Ok ()
-            | Error error -> Error (error.ToString ())
+            match candidate.Diploma with
+            | Diploma diploma ->
+                let result = InMemoryDatabase.insert candidate.Name (candidate.Name, candidate.DateOfBirth, candidate.GuardianId, diploma) store.candidates
+                match result with
+                | Ok _ -> Ok ()
+                | Error error -> Error (error.ToString ())
+            
+            
