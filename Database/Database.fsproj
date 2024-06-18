@@ -10,6 +10,7 @@
         <Compile Include="Store.fs" />
         <Compile Include="CandidateStore.fs" />
         <Compile Include="SessionStore.fs" />
+        <Compile Include="GuardianStore.fs" />
     </ItemGroup>
 
     <ItemGroup>

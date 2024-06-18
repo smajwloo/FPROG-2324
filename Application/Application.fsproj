@@ -12,6 +12,7 @@
     <ItemGroup>
       <Compile Include="Candidate.fs" />
       <Compile Include="Session.fs" />
+      <Compile Include="Guardian.fs" />
     </ItemGroup>
 
 </Project>

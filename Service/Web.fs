@@ -3,6 +3,7 @@ module Rommulbad.Web
 open Application
 open Application.Candidate
 open Application.Session
+open Application.Guardian
 open Model.Candidate
 open Model.Session
 open Model.Guardian
@@ -96,6 +97,33 @@ let getEligibleSessions (name: string, diploma: string) : HttpHandler =
                 let eligibleSessions = getEligibleSessions sessions diploma
                 return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
         }
+        
+let addGuardian: HttpHandler =
+    fun next ctx ->
+        task {
+            let! guardian = ThothSerializer.ReadBody ctx Guardian.decode
+
+            match guardian with
+            | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+            | Ok guardian ->
+                let guardianStore = ctx.GetService<IGuardianStore>()
+
+                let result = Guardian.addGuardian guardianStore guardian
+                match result with
+                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                | Ok _ -> return! text "OK" next ctx
+        }
+        
+let getGuardians: HttpHandler =
+    fun next ctx ->
+        task {
+            let guardianStore = ctx.GetService<IGuardianStore>()
+            let guardiansResult = Guardian.getGuardians guardianStore
+            
+            match guardiansResult with
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok guardians -> return! ThothSerializer.RespondJsonSeq guardians Guardian.encode next ctx
+        }
 
 
 let routes: HttpHandler =
@@ -106,4 +134,6 @@ let routes: HttpHandler =
           GET >=> routef "/candidate/%s/session" getSessions
           GET >=> routef "/candidate/%s/session/total" getTotalMinutes
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
-          GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes ]
+          GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes
+          POST >=> route "/guardian" >=> addGuardian
+          GET >=> route "/guardian" >=> getGuardians ]
