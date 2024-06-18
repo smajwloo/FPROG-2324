@@ -13,4 +13,4 @@ type GuardianStore (store: Store) =
             let result = InMemoryDatabase.insert guardian.Id (guardian.Id, guardian.Name) store.guardians
             match result with
             | Ok _ -> Ok ()
-            | Error _ -> Error "Could not add guardian"
+            | Error error -> Error (error.ToString ())

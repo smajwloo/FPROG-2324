@@ -4,7 +4,6 @@ open Model.Guardian
 
 type IGuardianStore =
     abstract member getGuardians: unit -> seq<string * string>
-    
     abstract member addGuardian: Guardian -> Result<unit, string>
 
 let guardiansIsEmpty guardians =
@@ -26,4 +25,7 @@ let getGuardians (store: IGuardianStore) : Result<seq<Guardian>, string> =
     guardiansIsEmpty mappedGuardians
 
 let addGuardian (store: IGuardianStore) (guardian: Guardian) =
-    store.addGuardian(guardian)
+    let validatedGuardian = Guardian.validateGuardian guardian
+    match validatedGuardian with
+    | Error error -> Error error
+    | Ok _ -> store.addGuardian guardian
