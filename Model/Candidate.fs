@@ -17,11 +17,10 @@ type Candidate =
 
 
 module Candidate =
-    let make name dateOfBirth guardianId diploma =
-        { Name = name
-          DateOfBirth = dateOfBirth
-          GuardianId = guardianId
-          Diploma = Diploma.make diploma }
+    let make rawName rawDateOfBirth rawGuardianId rawDiploma =
+        rawName
+        |> Validator.validateName
+        |> Result.map (fun _ -> { Name = rawName; DateOfBirth = rawDateOfBirth; GuardianId = rawGuardianId; Diploma = rawDiploma })
     
     let encode: Encoder<Candidate> =
         fun candidate ->
@@ -37,6 +36,3 @@ module Candidate =
               DateOfBirth = get.Required.Field "date_of_birth" Decode.datetime
               GuardianId = get.Required.Field "guardian_id" Decode.string
               Diploma = get.Required.Field "diploma" Diploma.decode })
-        
-    let validateName (name: string) =
-        Validator.validateName name

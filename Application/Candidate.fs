@@ -1,6 +1,7 @@
 module Application.Candidate
 
 open System
+open Model.Diploma
 open Model.Candidate
     
 type ICandidateStore =
@@ -12,29 +13,41 @@ let filterCandidateByGuardianId (guardianId: string) (name: string) (candidates:
     candidates
     |> List.filter (fun candidate -> candidate.GuardianId = guardianId && candidate.Name = name)
     
+let mapCandidates candidates =
+    candidates
+    |> Seq.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId (Diploma.make diploma))
+    |> Seq.choose (function
+        | Ok session -> Some session
+        | Error _ -> None
+    )
+    |> Seq.toList
+    
 let getCandidates (candidateStore: ICandidateStore) : List<Candidate> =
     let candidates = candidateStore.getCandidates ()
-    candidates
-    |> Seq.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId diploma)
-    |> List.ofSeq
+    let mappedCandidates = mapCandidates candidates
+    mappedCandidates
     
     
 let getCandidate (candidateStore: ICandidateStore) (name: string) : Option<Candidate> =
     let candidate = candidateStore.getCandidate name
     candidate
-    |> Option.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId diploma)
-    
-let validateCandidate (candidate: Candidate) =
-    Candidate.validateName candidate.Name
+    |> Option.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId (Diploma.make diploma))
+    |> Option.bind (fun candidate ->
+                     match candidate with
+                     | Ok guardian -> Some guardian
+                     | Error _ -> None
+                    )
     
 let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) : Result<unit, string> =
-    let existingCandidates = getCandidates candidateStore
-    match existingCandidates with
-    | [] -> candidateStore.addCandidate candidate
-    | candidates ->
-        let filteredCandidates = filterCandidateByGuardianId candidate.GuardianId candidate.Name candidates
-        match filteredCandidates with
+    let candidate = Candidate.make candidate.Name candidate.DateOfBirth candidate.GuardianId candidate.Diploma
+    match candidate with
+    | Error errorMessage -> Error errorMessage
+    | Ok candidate ->
+        let existingCandidates = getCandidates candidateStore
+        match existingCandidates with
         | [] -> candidateStore.addCandidate candidate
-        | _ -> Error "The guardian already has a candidate with that name."
-    
-    
+        | candidates ->
+            let filteredCandidates = filterCandidateByGuardianId candidate.GuardianId candidate.Name candidates
+            match filteredCandidates with
+            | [] -> candidateStore.addCandidate candidate
+            | _ -> Error "The guardian already has a candidate with that name."

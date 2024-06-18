@@ -46,13 +46,10 @@ let addCandidate: HttpHandler =
                 match Guardian.guardianExists guardian with
                 | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
                 | Ok _ ->
-                    match Candidate.validateCandidate candidate with
+                    let result = Candidate.addCandidate candidateStore candidate
+                    match result with
                     | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                    | Ok _ ->
-                        let result = Candidate.addCandidate candidateStore candidate
-                        match result with
-                        | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                        | Ok _ -> return! text "OK" next ctx
+                    | Ok _ -> return! text "OK" next ctx
         }
 
 let addSession (name: string) : HttpHandler =
