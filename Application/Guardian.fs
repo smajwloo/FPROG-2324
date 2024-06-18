@@ -13,11 +13,6 @@ let guardiansIsEmpty guardians =
     | true -> Error "No guardians found!"
     | false -> Ok guardians
     
-let mapGuardians id name =
-    { Guardian.Id = id;
-          Name = name;
-          Candidates = list.Empty }
-    
 let guardianExists (guardian: Option<Guardian>) : Result<unit, string> =
     match guardian with
     | None -> Error "Guardian not found!"
@@ -26,25 +21,26 @@ let guardianExists (guardian: Option<Guardian>) : Result<unit, string> =
 let getGuardians (store: IGuardianStore) : Result<seq<Guardian>, string> =
     let guardians = store.getGuardians ()
     let mappedGuardians = guardians
-                         |> Seq.map (fun (id, name) -> mapGuardians id name)
+                         |> Seq.map (fun (id, name) -> Guardian.make id name)
+                         |> Seq.choose (function
+                            | Ok guardian -> Some guardian
+                            | Error _ -> None
+                         )
+
     guardiansIsEmpty mappedGuardians
     
 let getGuardian (store: IGuardianStore) (id: string) : Option<Guardian> =
     let guardian = store.getGuardian id
     guardian
-    |> Option.map (fun (id, name) -> mapGuardians id name)
-    
-let validateGuardian (guardian: Guardian) =
-    let idValidation = Guardian.validateGuardianId guardian.Id
-    let nameValidation = Guardian.validateGuardianName guardian.Name
-    match idValidation, nameValidation with
-    | Ok (), Ok () -> Ok ()
-    | Error idError, Error nameError -> Error (idError + " and " + nameError)
-    | Error error, _ -> Error error
-    | _, Error error -> Error error
-
+     |> Option.map (fun (id, name) -> Guardian.make id name)
+     |> Option.bind (fun guardian ->
+                     match guardian with
+                     | Ok guardian -> Some guardian
+                     | Error _ -> None
+                    )
+     
 let addGuardian (store: IGuardianStore) (guardian: Guardian) =
-    let validatedGuardian = validateGuardian guardian
-    match validatedGuardian with
-    | Error error -> Error error
-    | Ok _ -> store.addGuardian guardian
+    let result = Guardian.make guardian.Id guardian.Name
+    match result with
+    | Error errorMessage -> Error errorMessage
+    | Ok guardian -> store.addGuardian guardian

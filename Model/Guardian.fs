@@ -12,6 +12,12 @@ type Guardian =
       Candidates: List<Candidate> }
 
 module Guardian =
+    let make (rawId: string) (rawName: string) =
+        rawId
+        |> Validator.validateId
+        |> Result.bind (fun _ -> Validator.validateName rawName)
+        |> Result.map (fun _ -> { Id = rawId; Name = rawName; Candidates = List.empty }) //TODO: GetCandidates from store
+    
     let encode: Encoder<Guardian> =
         fun guardian ->
             Encode.object
@@ -23,9 +29,3 @@ module Guardian =
             { Id = get.Required.Field "Id" Decode.string
               Name = get.Required.Field "Name" Decode.string
               Candidates = list.Empty }) //TODO: GetCandidates from store
-
-    let validateGuardianId (id: string) =
-        Validator.validateId id
-        
-    let validateGuardianName (name: string) =
-        Validator.validateName name
