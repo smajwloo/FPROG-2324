@@ -53,14 +53,11 @@ let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) : Resu
             | [] -> candidateStore.addCandidate candidate
             | _ -> Error "The guardian already has a candidate with that name."
             
-let awardDiploma candidateStore name diploma eligibleSessions =
+let awardDiploma candidateStore name diploma =
     let diploma = Diploma.make diploma
-    match eligibleSessions with
-    | [] -> Error $"The candidate is not eligible for diploma {diploma}."
-    | _ ->
-        let candidate = getCandidate candidateStore name
-        match candidate with
-        | None -> Error "Candidate not found!"
-        | Some candidate ->
-            candidateStore.updateCandidate candidate diploma
-            Ok ()
+    let candidate = getCandidate candidateStore name
+    match candidate with
+    | None -> Error "Candidate not found!"
+    | Some candidate ->
+        candidateStore.updateCandidate candidate diploma
+        Ok ()

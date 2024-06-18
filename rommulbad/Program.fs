@@ -1,6 +1,4 @@
-﻿open System
-open Microsoft.AspNetCore.Session
-open Thoth.Json.Giraffe
+﻿open Thoth.Json.Giraffe
 open Thoth.Json.Net
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting

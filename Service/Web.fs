@@ -157,10 +157,13 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok sessions ->
                 let eligibleSessions = Session.getEligibleSessions sessions diploma
-                let result = Candidate.awardDiploma candidateStore name diploma eligibleSessions
-                match result with
-                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                | Ok _ -> return! text "OK" next ctx
+                match eligibleSessions with
+                | [] -> return! RequestErrors.BAD_REQUEST "The candidate is not eligible for that diploma." next ctx
+                | _ ->
+                    let result = Candidate.awardDiploma candidateStore name diploma
+                    match result with
+                    | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                    | Ok _ -> return! text "OK" next ctx
         }
 
 
@@ -169,11 +172,11 @@ let routes: HttpHandler =
         [ GET >=> route "/candidate" >=> getCandidates
           GET >=> routef "/candidate/%s" getCandidate
           POST >=> route "/candidate" >=> addCandidate
+          POST >=> routef "/candidate/%s/%s" awardDiploma
           POST >=> routef "/candidate/%s/session" addSession
           GET >=> routef "/candidate/%s/session" getSessions
           GET >=> routef "/candidate/%s/session/total" getTotalMinutes
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
-          POST >=> routef "/candidate/%s/session/%s" awardDiploma
           GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes
           POST >=> route "/guardian" >=> addGuardian
           GET >=> route "/guardian" >=> getGuardians ]
