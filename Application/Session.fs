@@ -31,9 +31,16 @@ let getSessionsOfCandidate (sessionStore: ISessionStore) (name: string) : Result
     let mappedSessions = mapSessions sessions name
     sessionsIsEmpty mappedSessions
     
-let getEligibleSessions (sessions: seq<Session>) (diploma: string) : seq<Session> =
+
+let eligibleSessions sessions diploma =
+    sessions
+    |> Seq.filter (fun session -> session.Deep || Session.shallowOk diploma)
+    |> Seq.filter (fun session -> session.Minutes >= Session.minMinutes diploma)
+    |> Seq.toList
+    
+let getEligibleSessions sessions diploma =
     let diploma = Diploma.make diploma
-    Session.eligibleSessions sessions diploma
+    eligibleSessions sessions diploma
     
 let getTotalMinutes (sessions: seq<Session>) : int =
     sessions

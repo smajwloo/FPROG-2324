@@ -18,7 +18,6 @@ module Session =
     let make rawDeep rawDate rawMinutes =
         rawMinutes
         |> Validator.validateSessionLength
-        |> Result.bind (fun _ -> Validator.validateDate rawDate)
         |> Result.map (fun _ -> { Deep = rawDeep; Date = rawDate; Minutes = rawMinutes })
     
     let encode: Encoder<Session> =
@@ -44,8 +43,3 @@ module Session =
         | A -> 1
         | B -> 10
         | _ -> 15
-    
-    let eligibleSessions (sessions: seq<Session>) (diploma: Diploma) =
-        sessions
-        |> Seq.filter (fun session -> session.Deep || shallowOk diploma)
-        |> Seq.filter (fun session -> session.Minutes >= minMinutes diploma)

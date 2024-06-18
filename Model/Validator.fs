@@ -20,6 +20,3 @@ let validateName name =
         
 let validateSessionLength minutes =
     if minutes < 0 || minutes > 30 then Error "The session length has to be between 0 and 30 minutes." else Ok ()
-    
-let validateDate date =
-    if date < DateTime.Now then Error "The date has to be in the future." else Ok ()

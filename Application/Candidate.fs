@@ -8,6 +8,7 @@ type ICandidateStore =
     abstract getCandidates : unit -> seq<string * DateTime * string * string>
     abstract getCandidate : string -> Option<string * DateTime * string * string>
     abstract addCandidate : Candidate -> Result<unit, string>
+    abstract updateCandidate : Candidate -> Diploma -> unit
     
 let filterCandidateByGuardianId (guardianId: string) (name: string) (candidates: List<Candidate>) : List<Candidate> =
     candidates
@@ -34,7 +35,7 @@ let getCandidate (candidateStore: ICandidateStore) (name: string) : Option<Candi
     |> Option.map (fun (name, dateOfBirth, guardianId, diploma) -> Candidate.make name dateOfBirth guardianId (Diploma.make diploma))
     |> Option.bind (fun candidate ->
                      match candidate with
-                     | Ok guardian -> Some guardian
+                     | Ok candidate -> Some candidate
                      | Error _ -> None
                     )
     
@@ -51,3 +52,15 @@ let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) : Resu
             match filteredCandidates with
             | [] -> candidateStore.addCandidate candidate
             | _ -> Error "The guardian already has a candidate with that name."
+            
+let awardDiploma candidateStore name diploma eligibleSessions =
+    let diploma = Diploma.make diploma
+    match eligibleSessions with
+    | [] -> Error $"The candidate is not eligible for diploma {diploma}."
+    | _ ->
+        let candidate = getCandidate candidateStore name
+        match candidate with
+        | None -> Error "Candidate not found!"
+        | Some candidate ->
+            candidateStore.updateCandidate candidate diploma
+            Ok ()

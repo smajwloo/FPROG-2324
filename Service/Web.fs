@@ -145,6 +145,23 @@ let getGuardians: HttpHandler =
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok guardians -> return! ThothSerializer.RespondJsonSeq guardians Guardian.encode next ctx
         }
+        
+let awardDiploma (name: string, diploma: string) : HttpHandler =
+    fun next ctx ->
+        task {
+            let sessionStore = ctx.GetService<ISessionStore>()
+            let candidateStore = ctx.GetService<ICandidateStore>()
+            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
+            
+            match sessionsResult with
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok sessions ->
+                let eligibleSessions = Session.getEligibleSessions sessions diploma
+                let result = Candidate.awardDiploma candidateStore name diploma eligibleSessions
+                match result with
+                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                | Ok _ -> return! text "OK" next ctx
+        }
 
 
 let routes: HttpHandler =
@@ -156,6 +173,7 @@ let routes: HttpHandler =
           GET >=> routef "/candidate/%s/session" getSessions
           GET >=> routef "/candidate/%s/session/total" getTotalMinutes
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
+          POST >=> routef "/candidate/%s/session/%s" awardDiploma
           GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes
           POST >=> route "/guardian" >=> addGuardian
           GET >=> route "/guardian" >=> getGuardians ]

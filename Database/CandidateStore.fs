@@ -21,5 +21,8 @@ type CandidateStore (store: Store) =
                 match result with
                 | Ok _ -> Ok ()
                 | Error error -> Error (error.ToString ())
-            
-            
+                
+        member this.updateCandidate (candidate: Candidate) (diploma: Diploma) =
+            match diploma with
+            | Diploma diploma ->
+                InMemoryDatabase.update candidate.Name (candidate.Name, candidate.DateOfBirth, candidate.GuardianId, diploma) store.candidates
