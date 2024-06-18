@@ -8,6 +8,9 @@ type GuardianStore (store: Store) =
     interface IGuardianStore with
         member this.getGuardians () =
             InMemoryDatabase.all store.guardians
+            
+        member this.getGuardian id =
+            InMemoryDatabase.lookup id store.guardians
         
         member this.addGuardian guardian =
             let result = InMemoryDatabase.insert guardian.Id (guardian.Id, guardian.Name) store.guardians

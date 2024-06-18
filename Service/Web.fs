@@ -24,11 +24,35 @@ let getCandidate (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let candidateStore = ctx.GetService<ICandidateStore>()
-            let candidate = Candidate.getCandidate (candidateStore, name)
+            let candidate = Candidate.getCandidate candidateStore name
             
             match candidate with
             | None -> return! RequestErrors.NOT_FOUND "Candidate not found!" next ctx
             | Some candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
+        }
+        
+let addCandidate: HttpHandler =
+    fun next ctx ->
+        task {
+            let! candidate = ThothSerializer.ReadBody ctx Candidate.decode
+            
+            match candidate with
+            | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+            | Ok candidate ->
+                let candidateStore = ctx.GetService<ICandidateStore>()
+                let guardianStore = ctx.GetService<IGuardianStore>()
+                
+                let guardian = Guardian.getGuardian guardianStore candidate.GuardianId
+                match Guardian.guardianExists guardian with
+                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                | Ok _ ->
+                    match Candidate.validateCandidate candidate with
+                    | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                    | Ok _ ->
+                        let result = Candidate.addCandidate candidateStore candidate
+                        match result with
+                        | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                        | Ok _ -> return! text "OK" next ctx
         }
 
 let addSession (name: string) : HttpHandler =
@@ -41,7 +65,7 @@ let addSession (name: string) : HttpHandler =
             | Ok session ->
                 let sessionStore = ctx.GetService<ISessionStore>()
 
-                let result = addSession sessionStore name session
+                let result = Session.addSession sessionStore name session
                 match result with
                 | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
                 | Ok _ -> return! text "OK" next ctx
@@ -130,6 +154,7 @@ let routes: HttpHandler =
     choose
         [ GET >=> route "/candidate" >=> getCandidates
           GET >=> routef "/candidate/%s" getCandidate
+          POST >=> route "/candidate" >=> addCandidate
           POST >=> routef "/candidate/%s/session" addSession
           GET >=> routef "/candidate/%s/session" getSessions
           GET >=> routef "/candidate/%s/session/total" getTotalMinutes

@@ -23,7 +23,7 @@ type Store() =
     member val candidates: InMemoryDatabase<string, string * DateTime * string * string> =
         [ "Eleanor", DateTime(2016, 1, 9), "123-ABCD", "A"
           "Camiel", DateTime(2015, 11, 3), "123-ABCD", "C"
-          "Lore", DateTime(2018, 8, 30), "9999-ZZZ", "" ]
+          "Lore", DateTime(2018, 8, 30), "999-ZZZZ", "" ]
         |> Seq.map (fun (n, bd, gi, dpl) -> n, (n, bd, gi, dpl))
         |> InMemoryDatabase.ofSeq
 

@@ -7,8 +7,14 @@ open Application.Candidate
 
 type CandidateStore (store: Store) =
     interface ICandidateStore with
-        member this.GetCandidates () = 
+        member this.getCandidates () = 
             InMemoryDatabase.all store.candidates
                     
-        member this.GetCandidate (name: string) =
+        member this.getCandidate (name: string) =
             InMemoryDatabase.lookup name store.candidates
+            
+        member this.addCandidate (candidate: Candidate) =
+            let result = InMemoryDatabase.insert candidate.Name (candidate.Name, candidate.DateOfBirth, candidate.GuardianId, candidate.Diploma) store.candidates
+            match result with
+            | Ok _ -> Ok ()
+            | Error error -> Error (error.ToString ())

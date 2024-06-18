@@ -1,9 +1,11 @@
 module Application.Guardian
 
 open Model.Guardian
+open Model.Candidate
 
 type IGuardianStore =
     abstract member getGuardians: unit -> seq<string * string>
+    abstract member getGuardian: string -> Option<string * string>
     abstract member addGuardian: Guardian -> Result<unit, string>
 
 let guardiansIsEmpty guardians =
@@ -11,18 +13,26 @@ let guardiansIsEmpty guardians =
     | true -> Error "No guardians found!"
     | false -> Ok guardians
     
-let mapGuardians guardians =
-    guardians
-    |> Seq.map (fun (id, name) ->
-        { Guardian.Id = id
-          Name = name
-          Candidates = list.Empty })
+let mapGuardians id name =
+    { Guardian.Id = id;
+          Name = name;
+          Candidates = list.Empty }
+    
+let guardianExists (guardian: Option<Guardian>) : Result<unit, string> =
+    match guardian with
+    | None -> Error "Guardian not found!"
+    | Some _ -> Ok ()
     
 let getGuardians (store: IGuardianStore) : Result<seq<Guardian>, string> =
     let guardians = store.getGuardians ()
     let mappedGuardians = guardians
-                         |> mapGuardians
+                         |> Seq.map (fun (id, name) -> mapGuardians id name)
     guardiansIsEmpty mappedGuardians
+    
+let getGuardian (store: IGuardianStore) (id: string) : Option<Guardian> =
+    let guardian = store.getGuardian id
+    guardian
+    |> Option.map (fun (id, name) -> mapGuardians id name)
     
 let validateGuardian (guardian: Guardian) =
     let idValidation = Guardian.validateGuardianId guardian.Id

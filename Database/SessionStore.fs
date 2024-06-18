@@ -14,4 +14,4 @@ type SessionStore (store: Store) =
             let result = InMemoryDatabase.insert (name, session.Date) (name, session.Deep, session.Date, session.Minutes) store.sessions
             match result with
             | Ok _ -> Ok ()
-            | Error _ -> Error "Could not add session to store"
+            | Error error -> Error (error.ToString ())

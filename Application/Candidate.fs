@@ -4,26 +4,44 @@ open System
 open Model.Candidate
     
 type ICandidateStore =
-    abstract GetCandidates : unit -> seq<string * DateTime * string * string>
-    abstract GetCandidate : string -> Option<string * DateTime * string * string>
+    abstract getCandidates : unit -> seq<string * DateTime * string * string>
+    abstract getCandidate : string -> Option<string * DateTime * string * string>
+    abstract addCandidate : Candidate -> Result<unit, string>
     
-let mapCandidate name gId dpl : Candidate =
+let filterCandidateByGuardianId (guardianId: string) (name: string) (candidates: List<Candidate>) : List<Candidate> =
+    candidates
+    |> List.filter (fun candidate -> candidate.GuardianId = guardianId && candidate.Name = name)
+    
+let mapCandidate name dateOfBirth guardianId diploma : Candidate =
     { Candidate.Name = name;
-          GuardianId = gId;
-          Diploma = dpl }
+        DateOfBirth = dateOfBirth;
+        GuardianId = guardianId;
+        Diploma = diploma }
 
     
 let getCandidates (candidateStore: ICandidateStore) : List<Candidate> =
-    let candidates = candidateStore.GetCandidates ()
+    let candidates = candidateStore.getCandidates ()
     candidates
-    |> Seq.map (fun (name, _, gId, dpl) -> mapCandidate name gId dpl)
+    |> Seq.map (fun (name, dateOfBirth, guardianId, diploma) -> mapCandidate name dateOfBirth guardianId diploma)
     |> List.ofSeq
     
     
-let getCandidate (candidateStore: ICandidateStore, name: string) : Option<Candidate> =
-    let candidate = candidateStore.GetCandidate name
+let getCandidate (candidateStore: ICandidateStore) (name: string) : Option<Candidate> =
+    let candidate = candidateStore.getCandidate name
     candidate
-    |> Option.map (fun (name, _, gId, dpl) -> mapCandidate name gId dpl)
+    |> Option.map (fun (name, dateOfBirth, guardianId, diploma) -> mapCandidate name dateOfBirth guardianId diploma)
     
+let validateCandidate (candidate: Candidate) =
+    Candidate.validateName candidate.Name
+    
+let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) : Result<unit, string> =
+    let existingCandidates = getCandidates candidateStore
+    match existingCandidates with
+    | [] -> candidateStore.addCandidate candidate
+    | candidates ->
+        let filteredCandidates = filterCandidateByGuardianId candidate.GuardianId candidate.Name candidates
+        match filteredCandidates with
+        | [] -> candidateStore.addCandidate candidate
+        | _ -> Error "The guardian already has a candidate with that name."
     
     
