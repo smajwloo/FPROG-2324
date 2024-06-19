@@ -18,6 +18,12 @@ let filterSessionsByEligibility sessions diploma =
     
 let makeSession (_, deep, date, minutes) =
     Session.make deep date minutes
+  
+let makeDiploma diploma =
+    let diploma = Diploma.make diploma
+    match diploma with
+    | None -> Error "Invalid diploma."
+    | Some diploma -> Ok diploma
     
 let handleSessionSequence sessions =
     sessions
@@ -38,9 +44,12 @@ let getSessionsOfCandidate (sessionStore: ISessionStore) (name: string) =
     |> handleSessionSequence
 
 let getEligibleSessions sessions diploma =
-    let diploma = Diploma.make diploma
-    filterSessionsByEligibility sessions diploma
-    |> sequenceIsEmpty "No eligible sessions found."
+    let diploma = makeDiploma diploma
+    match diploma with
+    | Error errorMessage -> Error errorMessage
+    | Ok diploma ->
+        filterSessionsByEligibility sessions diploma
+        |> sequenceIsEmpty "No eligible sessions found."
     
 let getTotalMinutes sessions : int =
     sessions
@@ -48,8 +57,10 @@ let getTotalMinutes sessions : int =
     |> Seq.sum
     
 let candidateHasSwumEnough totalMinutes diploma =
-    let diploma = Diploma.make diploma
-    totalMinutes >= Diploma.totalRequired diploma
+    let diploma = makeDiploma diploma
+    match diploma with
+    | Error errorMessage -> Error errorMessage
+    | Ok diploma -> Ok (totalMinutes >= Diploma.totalRequired diploma)
     
 let addSession (sessionStore: ISessionStore) (name: string) (session: Session) =
     let session = makeSession (name, session.Deep, session.Date, session.Minutes)

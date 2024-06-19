@@ -15,12 +15,10 @@ type CandidateStore (store: Store) =
             InMemoryDatabase.lookup name store.candidates
             
         member this.addCandidate (candidate: Candidate) =
-            match candidate.Diploma with
-            | Diploma diploma ->
-                let result = InMemoryDatabase.insert candidate.Name (candidate.Name, candidate.DateOfBirth, candidate.GuardianId, diploma) store.candidates
-                match result with
-                | Ok _ -> Ok ()
-                | Error error -> Error (error.ToString ())
+            let result = InMemoryDatabase.insert candidate.Name (candidate.Name, candidate.DateOfBirth, candidate.GuardianId, "") store.candidates
+            match result with
+            | Ok _ -> Ok ()
+            | Error error -> Error (error.ToString ())
                 
         member this.updateCandidate (candidate: Candidate) (diploma: Diploma) =
             match diploma with

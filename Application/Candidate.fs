@@ -44,4 +44,6 @@ let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) (exist
             
 let awardDiploma (candidateStore: ICandidateStore) candidate diploma =
     let diploma = Diploma.make diploma
-    candidateStore.updateCandidate candidate diploma
+    match diploma with
+    | None -> Error "Invalid diploma."
+    | Some diploma -> Ok (candidateStore.updateCandidate candidate diploma)

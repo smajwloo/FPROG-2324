@@ -51,6 +51,17 @@ let addCandidate: HttpHandler =
                     | Ok _ -> return! text "Candidate added successfully" next ctx
         }
         
+let isQualifiedForDiploma eligibleSessions diploma =
+    match eligibleSessions with
+        | Error _ -> None
+        | Ok sessions ->
+            let totalMinutes = Session.getTotalMinutes sessions
+            let isQualifiedForDiplomaResult = Session.candidateHasSwumEnough totalMinutes diploma
+            
+            match isQualifiedForDiplomaResult with
+            | Error _ -> None
+            | Ok isQualifiedForDiploma -> Some isQualifiedForDiploma
+        
 let getEligibleSessionsOfCandidate (sessionStore: ISessionStore) (candidate: Candidate) (diploma: string) =
     let sessionsResult = Session.getSessionsOfCandidate sessionStore candidate.Name
     
@@ -58,13 +69,12 @@ let getEligibleSessionsOfCandidate (sessionStore: ISessionStore) (candidate: Can
     | Error _ -> None
     | Ok sessions ->
         let eligibleSessions = Session.getEligibleSessions sessions diploma
+        let isQualifiedResult = isQualifiedForDiploma eligibleSessions diploma
         
-        match eligibleSessions with
-        | Error _ -> None
-        | Ok sessions ->
-            let totalMinutes = Session.getTotalMinutes sessions
-            let isQualifiedForDiploma = Session.candidateHasSwumEnough totalMinutes diploma
-            match isQualifiedForDiploma with
+        match isQualifiedResult with
+        | None -> None
+        | Some isQualified ->
+            match isQualified with
             | false -> None
             | true -> Some candidate
                 
@@ -87,8 +97,10 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
                 match eligibleSessionsOfCandidate with
                 | None -> return! RequestErrors.BAD_REQUEST "The candidate is not eligible for that diploma." next ctx
                 | _ ->
-                    Candidate.awardDiploma candidateStore candidate diploma
-                    return! text "Diploma awarded successfully" next ctx
+                    let result = Candidate.awardDiploma candidateStore candidate diploma
+                    match result with
+                    | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                    | Ok _ -> return! text "Diploma awarded successfully" next ctx
         }
         
 let getCandidatesQualifyingForDiploma (diploma: string) : HttpHandler =
