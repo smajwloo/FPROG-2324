@@ -2,7 +2,6 @@ module Model.Session
 
 open Thoth.Json.Net
 open System
-open Model.Diploma
 
 /// Swimming session registered on a specific date
 ///
