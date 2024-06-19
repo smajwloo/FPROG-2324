@@ -31,8 +31,3 @@ module Session =
             { Deep = get.Required.Field "deep" Decode.bool
               Date = get.Required.Field "date" Decode.datetime
               Minutes = get.Required.Field "amount" Decode.int })
-        
-    let getTotalMinutes sessions : int =
-        sessions
-        |> Seq.map _.Minutes
-        |> Seq.sum

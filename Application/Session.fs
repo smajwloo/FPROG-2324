@@ -42,8 +42,10 @@ let getEligibleSessions sessions diploma =
     filterSessionsByEligibility sessions diploma
     |> sequenceIsEmpty "No eligible sessions found."
     
-let getTotalMinutes sessions =
-    Session.getTotalMinutes sessions
+let getTotalMinutes sessions : int =
+    sessions
+    |> Seq.map _.Minutes
+    |> Seq.sum
     
 let addSession (sessionStore: ISessionStore) (name: string) (session: Session) =
     let session = makeSession (name, session.Deep, session.Date, session.Minutes)
