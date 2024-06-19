@@ -31,6 +31,37 @@ let getCandidates: HttpHandler =
             return! ThothSerializer.RespondJsonSeq candidates Candidate.encode next ctx
         }
 
+let isQualifiedForDiploma eligibleSessions diploma =
+    match eligibleSessions with
+        | Error _ -> None
+        | Ok sessions ->
+            let totalMinutes = Session.getTotalMinutes sessions
+            let isQualifiedForDiplomaResult = Session.candidateHasSwumEnough totalMinutes diploma
+            
+            match isQualifiedForDiplomaResult with
+            | Error _ -> None
+            | Ok isQualifiedForDiploma -> Some isQualifiedForDiploma
+        
+let getEligibleSessionsOfCandidate (sessionStore: ISessionStore) (candidate: Candidate) (diploma: string) =
+    let sessionsResult = Session.getSessionsOfCandidate sessionStore candidate.Name
+    
+    match sessionsResult with
+    | Error _ -> None
+    | Ok sessions ->
+        let eligibleSessions = Session.getEligibleSessions sessions diploma
+        let isQualifiedResult = isQualifiedForDiploma eligibleSessions diploma
+        
+        match isQualifiedResult with
+        | None -> None
+        | Some isQualified ->
+            match isQualified with
+            | false -> None
+            | true -> Some candidate
+                
+let getQualifiedCandidates (sessionStore: ISessionStore) (candidates: List<Candidate>) (diploma: string) =
+    candidates
+    |> List.choose (fun candidate -> getEligibleSessionsOfCandidate sessionStore candidate diploma)
+
 let getCandidate (name: string) : HttpHandler =
     fun next ctx ->
         task {
@@ -61,37 +92,6 @@ let addCandidate: HttpHandler =
                     let result = addCandidateToStore candidateStore candidate existingCandidates
                     return! handleAddCandidateResult result next ctx
         }
-
-let isQualifiedForDiploma eligibleSessions diploma =
-    match eligibleSessions with
-        | Error _ -> None
-        | Ok sessions ->
-            let totalMinutes = Session.getTotalMinutes sessions
-            let isQualifiedForDiplomaResult = Session.candidateHasSwumEnough totalMinutes diploma
-            
-            match isQualifiedForDiplomaResult with
-            | Error _ -> None
-            | Ok isQualifiedForDiploma -> Some isQualifiedForDiploma
-        
-let getEligibleSessionsOfCandidate (sessionStore: ISessionStore) (candidate: Candidate) (diploma: string) =
-    let sessionsResult = Session.getSessionsOfCandidate sessionStore candidate.Name
-    
-    match sessionsResult with
-    | Error _ -> None
-    | Ok sessions ->
-        let eligibleSessions = Session.getEligibleSessions sessions diploma
-        let isQualifiedResult = isQualifiedForDiploma eligibleSessions diploma
-        
-        match isQualifiedResult with
-        | None -> None
-        | Some isQualified ->
-            match isQualified with
-            | false -> None
-            | true -> Some candidate
-                
-let getQualifyingCandidates (sessionStore: ISessionStore) (candidates: List<Candidate>) (diploma: string) =
-    candidates
-    |> List.choose (fun candidate -> getEligibleSessionsOfCandidate sessionStore candidate diploma)
         
 let awardDiploma (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
@@ -114,7 +114,7 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
                     | Ok _ -> return! text "Diploma awarded successfully" next ctx
         }
         
-let getCandidatesQualifyingForDiploma (diploma: string) : HttpHandler =
+let getQualifiedCandidatesForDiploma (diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
@@ -124,7 +124,7 @@ let getCandidatesQualifyingForDiploma (diploma: string) : HttpHandler =
             match candidates with
             | [] -> return! RequestErrors.NOT_FOUND "No candidates found." next ctx
             | candidates ->
-                let qualifyingCandidates = getQualifyingCandidates sessionStore candidates diploma
+                let qualifyingCandidates = getQualifiedCandidates sessionStore candidates diploma
                 match qualifyingCandidates with
                 | [] -> return! RequestErrors.NOT_FOUND "No candidates qualify for that diploma." next ctx
                 | qualifyingCandidates ->

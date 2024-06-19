@@ -16,6 +16,6 @@ let routes: HttpHandler =
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
           GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes
           POST >=> routef "/candidate/%s/diploma/%s" awardDiploma
-          GET >=> routef "/candidate/diploma/%s" getCandidatesQualifyingForDiploma
+          GET >=> routef "/candidate/diploma/%s" getQualifiedCandidatesForDiploma
           GET >=> route "/guardian" >=> getGuardians
           POST >=> route "/guardian" >=> addGuardian ]
