@@ -35,4 +35,4 @@ module Candidate =
             { Name = get.Required.Field "name" Decode.string
               DateOfBirth = get.Required.Field "date_of_birth" Decode.datetime
               GuardianId = get.Required.Field "guardian_id" Decode.string
-              Diploma = get.Required.Field "diploma" Diploma.decode })
+              Diploma = NoDiploma })
