@@ -45,11 +45,6 @@ let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) =
             | [] -> candidateStore.addCandidate candidate
             | _ -> Error "The guardian already has a candidate with that name."
             
-let awardDiploma candidateStore name diploma =
+let awardDiploma (candidateStore: ICandidateStore) candidate diploma =
     let diploma = Diploma.make diploma
-    let candidate = getCandidate candidateStore name
-    match candidate with
-    | None -> Error "Candidate not found!"
-    | Some candidate ->
-        candidateStore.updateCandidate candidate diploma
-        Ok ()
+    candidateStore.updateCandidate candidate diploma

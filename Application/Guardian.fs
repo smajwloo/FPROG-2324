@@ -16,7 +16,7 @@ let getGuardians (store: IGuardianStore) =
     guardians
     |> Seq.map makeGuardian
     |> Seq.choose convertResultToOption
-    |> sequenceIsEmpty
+    |> sequenceIsEmpty "No guardians found."
     
 let getGuardian (store: IGuardianStore) (id: string) =
     let guardian = store.getGuardian id
@@ -25,7 +25,7 @@ let getGuardian (store: IGuardianStore) (id: string) =
     |> Option.bind convertResultToOption
      
 let addGuardian (store: IGuardianStore) (guardian: Guardian) =
-    let result = Guardian.make guardian.Id guardian.Name
+    let result = makeGuardian (guardian.Id, guardian.Name)
     match result with
     | Error errorMessage -> Error (errorMessage.ToString ())
     | Ok guardian -> store.addGuardian guardian

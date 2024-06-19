@@ -26,7 +26,7 @@ let getCandidate (name: string) : HttpHandler =
             let candidate = Candidate.getCandidate candidateStore name
             
             match candidate with
-            | None -> return! RequestErrors.NOT_FOUND "Candidate not found!" next ctx
+            | None -> return! RequestErrors.NOT_FOUND "Candidate not found." next ctx
             | Some candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
         }
         
@@ -43,7 +43,7 @@ let addCandidate: HttpHandler =
                 
                 let guardian = Guardian.getGuardian guardianStore candidate.GuardianId
                 match guardian with
-                | None -> return! RequestErrors.BAD_REQUEST "Guardian does not exist" next ctx
+                | None -> return! RequestErrors.BAD_REQUEST "Guardian does not exist." next ctx
                 | Some _ ->
                     let result = Candidate.addCandidate candidateStore candidate
                     match result with
@@ -60,7 +60,6 @@ let addSession (name: string) : HttpHandler =
             | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
             | Ok session ->
                 let sessionStore = ctx.GetService<ISessionStore>()
-
                 let result = Session.addSession sessionStore name session
                 match result with
                 | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
@@ -76,9 +75,13 @@ let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok sessions ->
-                let eligibleSessions = Session.getEligibleSessions sessions diploma
-                let total = Session.getTotalMinutes eligibleSessions
-                return! ThothSerializer.RespondJson total Encode.int next ctx
+                let eligibleSessionsResult = Session.getEligibleSessions sessions diploma
+                
+                match eligibleSessionsResult with
+                | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+                | Ok eligibleSessions ->
+                    let total = Session.getTotalMinutes eligibleSessions
+                    return! ThothSerializer.RespondJson total Encode.int next ctx
         }
 
 let getTotalMinutes (name: string) : HttpHandler =
@@ -114,8 +117,11 @@ let getEligibleSessions (name: string, diploma: string) : HttpHandler =
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok sessions ->
-                let eligibleSessions = getEligibleSessions sessions diploma
-                return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
+                let eligibleSessionsResult = getEligibleSessions sessions diploma
+                
+                match eligibleSessionsResult with
+                | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+                | Ok eligibleSessions -> return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
         }
         
 let addGuardian: HttpHandler =
@@ -150,19 +156,23 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
             let candidateStore = ctx.GetService<ICandidateStore>()
-            let sessionsResult = Session.getSessions sessionStore name
+            let candidate = Candidate.getCandidate candidateStore name
             
-            match sessionsResult with
-            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
-            | Ok sessions ->
-                let eligibleSessions = Session.getEligibleSessions sessions diploma
-                match eligibleSessions with
-                | [] -> return! RequestErrors.BAD_REQUEST "The candidate is not eligible for that diploma." next ctx
-                | _ ->
-                    let result = Candidate.awardDiploma candidateStore name diploma
-                    match result with
-                    | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                    | Ok _ -> return! text "OK" next ctx
+            match candidate with
+            | None -> return! RequestErrors.NOT_FOUND "Candidate not found." next ctx
+            | Some candidate ->
+                let sessionsResult = Session.getSessions sessionStore name
+                
+                match sessionsResult with
+                | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+                | Ok sessions ->
+                    let eligibleSessions = Session.getEligibleSessions sessions diploma
+                    
+                    match eligibleSessions with
+                    | Error _ -> return! RequestErrors.BAD_REQUEST "The candidate is not eligible for that diploma." next ctx
+                    | Ok _ ->
+                        Candidate.awardDiploma candidateStore candidate diploma
+                        return! text "OK" next ctx
         }
 
 
@@ -171,11 +181,11 @@ let routes: HttpHandler =
         [ GET >=> route "/candidate" >=> getCandidates
           GET >=> routef "/candidate/%s" getCandidate
           POST >=> route "/candidate" >=> addCandidate
-          POST >=> routef "/candidate/%s/%s" awardDiploma
           POST >=> routef "/candidate/%s/session" addSession
           GET >=> routef "/candidate/%s/session" getSessions
           GET >=> routef "/candidate/%s/session/total" getTotalMinutes
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
           GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes
+          POST >=> routef "/candidate/%s/diploma/%s" awardDiploma
           POST >=> route "/guardian" >=> addGuardian
           GET >=> route "/guardian" >=> getGuardians ]
