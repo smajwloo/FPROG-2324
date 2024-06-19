@@ -12,8 +12,7 @@ type ICandidateStore =
     abstract updateCandidate : Candidate -> Diploma -> unit
     
 let filterCandidateByGuardianId guardianId name candidates =
-    candidates
-    |> List.filter (fun candidate -> candidate.GuardianId = guardianId && candidate.Name = name)
+    candidates |> List.filter (fun candidate -> candidate.GuardianId = guardianId && candidate.Name = name)
     
 let makeCandidate (name, dateOfBirth, guardianId, diploma) =
     Candidate.make name dateOfBirth guardianId (Diploma.make diploma)
@@ -34,20 +33,14 @@ let getCandidate (candidateStore: ICandidateStore) (name: string) =
         | Error errorMessage -> Error (errorMessage.ToString ())
         | Ok candidate -> Ok candidate
    
-    
-let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) =
+let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) (existingCandidates: List<Candidate>) =
     let candidate = Candidate.make candidate.Name candidate.DateOfBirth candidate.GuardianId candidate.Diploma
     match candidate with
     | Error errorMessage -> Error (errorMessage.ToString())
     | Ok candidate ->
-        let existingCandidates = getCandidates candidateStore
         match existingCandidates with
         | [] -> candidateStore.addCandidate candidate
-        | candidates ->
-            let filteredCandidates = filterCandidateByGuardianId candidate.GuardianId candidate.Name candidates
-            match filteredCandidates with
-            | [] -> candidateStore.addCandidate candidate
-            | _ -> Error "The guardian already has a candidate with that name."
+        | _ -> Error "The guardian already has a candidate with that name."
             
 let awardDiploma (candidateStore: ICandidateStore) candidate diploma =
     let diploma = Diploma.make diploma

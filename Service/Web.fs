@@ -41,13 +41,14 @@ let addCandidate: HttpHandler =
                 let candidateStore = ctx.GetService<ICandidateStore>()
                 let guardianStore = ctx.GetService<IGuardianStore>()
             
-                let candidates = Candidate.getCandidates candidateStore
-                let guardian = Guardian.getGuardian guardianStore candidate.GuardianId candidates
+                let existingCandidates = Candidate.getCandidates candidateStore
+                let guardian = Guardian.getGuardian guardianStore candidate.GuardianId existingCandidates
                 
                 match guardian with
                 | None -> return! RequestErrors.BAD_REQUEST "Guardian does not exist." next ctx
                 | Some _ ->
-                    let result = Candidate.addCandidate candidateStore candidate
+                    let filteredCandidates = Candidate.filterCandidateByGuardianId candidate.GuardianId candidate.Name existingCandidates
+                    let result = Candidate.addCandidate candidateStore candidate filteredCandidates
                     match result with
                     | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
                     | Ok _ -> return! text "OK" next ctx
