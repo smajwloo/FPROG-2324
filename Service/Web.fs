@@ -193,8 +193,8 @@ let routes: HttpHandler =
         [ GET >=> route "/candidate" >=> getCandidates
           GET >=> routef "/candidate/%s" getCandidate
           POST >=> route "/candidate" >=> addCandidate
-          POST >=> routef "/candidate/%s/session" addSession
           GET >=> routef "/candidate/%s/session" getSessions
+          POST >=> routef "/candidate/%s/session" addSession
           GET >=> routef "/candidate/%s/session/total" getTotalMinutes
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
           GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes

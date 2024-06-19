@@ -15,8 +15,8 @@ let (|Diploma|) = function
     | NoDiploma -> ""
 
 module Diploma =
-    let make rawDiploma =
-        match rawDiploma with
+    let make (rawDiploma: string) =
+        match rawDiploma.ToUpper() with
         | "A" -> A
         | "B" -> B
         | "C" -> C
