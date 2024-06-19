@@ -47,6 +47,10 @@ let getTotalMinutes sessions : int =
     |> Seq.map _.Minutes
     |> Seq.sum
     
+let candidateHasSwumEnough totalMinutes diploma =
+    let diploma = Diploma.make diploma
+    totalMinutes >= Diploma.totalRequired diploma
+    
 let addSession (sessionStore: ISessionStore) (name: string) (session: Session) =
     let session = makeSession (name, session.Deep, session.Date, session.Minutes)
     match session with

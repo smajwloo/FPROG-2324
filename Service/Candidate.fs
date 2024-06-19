@@ -61,7 +61,12 @@ let getEligibleSessionsOfCandidate (sessionStore: ISessionStore) (candidate: Can
         
         match eligibleSessions with
         | Error _ -> None
-        | Ok _ -> Some candidate
+        | Ok sessions ->
+            let totalMinutes = Session.getTotalMinutes sessions
+            let isQualifiedForDiploma = Session.candidateHasSwumEnough totalMinutes diploma
+            match isQualifiedForDiploma with
+            | false -> None
+            | true -> Some candidate
                 
 let getQualifyingCandidates (sessionStore: ISessionStore) (candidates: List<Candidate>) (diploma: string) =
     candidates

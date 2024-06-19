@@ -39,3 +39,9 @@ module Diploma =
         | A -> 1
         | B -> 10
         | _ -> 15
+        
+    let totalRequired (diploma: Diploma) =
+        match diploma with
+        | A -> 120
+        | B -> 150
+        | _ -> 180
