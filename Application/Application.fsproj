@@ -10,6 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Include="Common.fs" />
       <Compile Include="Candidate.fs" />
       <Compile Include="Session.fs" />
       <Compile Include="Guardian.fs" />

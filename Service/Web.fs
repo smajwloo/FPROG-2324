@@ -11,7 +11,6 @@ open Giraffe
 open Thoth.Json.Net
 open Thoth.Json.Giraffe
 
-
 let getCandidates: HttpHandler =
     fun next ctx ->
         task {
@@ -43,9 +42,9 @@ let addCandidate: HttpHandler =
                 let guardianStore = ctx.GetService<IGuardianStore>()
                 
                 let guardian = Guardian.getGuardian guardianStore candidate.GuardianId
-                match Guardian.guardianExists guardian with
-                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                | Ok _ ->
+                match guardian with
+                | None -> return! RequestErrors.BAD_REQUEST "Guardian does not exist" next ctx
+                | Some _ ->
                     let result = Candidate.addCandidate candidateStore candidate
                     match result with
                     | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
@@ -72,7 +71,7 @@ let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
+            let sessionsResult = Session.getSessions sessionStore name
 
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -86,7 +85,7 @@ let getTotalMinutes (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
+            let sessionsResult = Session.getSessions sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -99,7 +98,7 @@ let getSessions (name: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
+            let sessionsResult = Session.getSessions sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -110,7 +109,7 @@ let getEligibleSessions (name: string, diploma: string) : HttpHandler =
     fun next ctx ->
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
-            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
+            let sessionsResult = Session.getSessions sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
@@ -151,7 +150,7 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
         task {
             let sessionStore = ctx.GetService<ISessionStore>()
             let candidateStore = ctx.GetService<ICandidateStore>()
-            let sessionsResult = Session.getSessionsOfCandidate sessionStore name
+            let sessionsResult = Session.getSessions sessionStore name
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
