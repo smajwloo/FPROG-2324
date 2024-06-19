@@ -3,7 +3,7 @@ module Model.Diploma
 open Thoth.Json.Net
 
 type Diploma = 
-    | A
+    private | A
     | B
     | C
     
