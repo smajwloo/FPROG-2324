@@ -28,7 +28,7 @@ module Candidate =
                 [ "name", Encode.string candidate.Name
                   "date_of_birth", Encode.datetime candidate.DateOfBirth
                   "guardian_id", Encode.string candidate.GuardianId
-                  "diploma", (let (Diploma diploma) = candidate.Diploma in Encode.string diploma) ]
+                  "diploma", Diploma.encode candidate.Diploma]
 
     let decode: Decoder<Candidate> =
         Decode.object (fun get ->

@@ -11,17 +11,17 @@ type ValidationError =
 let validate (s: string) (expression: string) =
     Regex.IsMatch(s, expression)
     
-let validateId name =
-    let isValid = validate name "^\d{3}-[A-Z]{4}$"
+let validateId id =
+    let isValid = validate id "^\d{3}-[A-Z]{4}$"
     match isValid with
     | false -> Error InvalidId
-    | true -> Ok ()
+    | true -> Ok id
 
 let validateName name =
     let isValid = validate name "^(?:[A-Za-z0-9]+ ?)+[A-Za-z0-9]+$"
     match isValid with
     | false -> Error InvalidName
-    | true -> Ok ()
+    | true -> Ok name
         
 let validateSessionLength minutes =
-    if minutes < 0 || minutes > 30 then Error InvalidSessionLength else Ok ()
+    if minutes < 0 || minutes > 30 then Error InvalidSessionLength else Ok minutes

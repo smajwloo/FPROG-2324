@@ -51,7 +51,7 @@ let addCandidate: HttpHandler =
                     let result = Candidate.addCandidate candidateStore candidate filteredCandidates
                     match result with
                     | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                    | Ok _ -> return! text "OK" next ctx
+                    | Ok _ -> return! text "Candidate added successfully" next ctx
         }
 
 let addSession (name: string) : HttpHandler =
@@ -72,7 +72,7 @@ let addSession (name: string) : HttpHandler =
                     let result = Session.addSession sessionStore name session
                     match result with
                     | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                    | Ok _ -> return! text "OK" next ctx
+                    | Ok _ -> return! text "Session added successfully" next ctx
         }
 
 let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
@@ -146,7 +146,7 @@ let addGuardian: HttpHandler =
                 let result = Guardian.addGuardian guardianStore guardian
                 match result with
                 | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                | Ok _ -> return! text "OK" next ctx
+                | Ok _ -> return! text "Guardian added successfully" next ctx
         }
         
 let getGuardians: HttpHandler =
@@ -184,7 +184,7 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
                     | Error _ -> return! RequestErrors.BAD_REQUEST "The candidate is not eligible for that diploma." next ctx
                     | Ok _ ->
                         Candidate.awardDiploma candidateStore candidate diploma
-                        return! text "OK" next ctx
+                        return! text "Diploma awarded successfully" next ctx
         }
 
 

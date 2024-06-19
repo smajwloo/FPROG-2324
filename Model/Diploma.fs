@@ -14,7 +14,6 @@ let (|Diploma|) = function
     | C -> "C"
     | NoDiploma -> ""
 
-
 module Diploma =
     let make rawDiploma =
         match rawDiploma with
@@ -23,6 +22,9 @@ module Diploma =
         | "C" -> C
         | _ -> NoDiploma
         
+    let encode: Encoder<Diploma> =
+        (fun (Diploma diploma) -> Encode.string diploma)
+       
     let decode: Decoder<Diploma> =
         Decode.string
         |> Decode.andThen (fun diploma -> Decode.succeed (make diploma))

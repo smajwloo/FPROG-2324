@@ -9,8 +9,7 @@ type ISessionStore =
     abstract addSession : string -> Session -> Result<unit, string>
     
 let filterSessionsByName name sessions =
-    sessions
-    |> Seq.filter (fun (n, _, _, _) -> n = name)
+    sessions |> Seq.filter (fun (n, _, _, _) -> n = name)
     
 let filterSessionsByEligibility sessions diploma =
     sessions
@@ -20,7 +19,7 @@ let filterSessionsByEligibility sessions diploma =
 let makeSession (_, deep, date, minutes) =
     Session.make deep date minutes
     
-let getSessions (sessionStore: ISessionStore) (name: string): Result<seq<Session>, string> =
+let getSessions (sessionStore: ISessionStore) (name: string) =
     let sessions = sessionStore.getSessions ()
     sessions
     |> filterSessionsByName name
