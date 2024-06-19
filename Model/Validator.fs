@@ -1,6 +1,5 @@
 module Model.Validator
 
-open System
 open System.Text.RegularExpressions
 
 type ValidationError =

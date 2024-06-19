@@ -28,3 +28,14 @@ module Diploma =
     let decode: Decoder<Diploma> =
         Decode.string
         |> Decode.andThen (fun diploma -> Decode.succeed (make diploma))
+        
+    let shallowOk (diploma: Diploma) =
+        match diploma with
+        | A -> true
+        | _ -> false
+        
+    let minMinutes (diploma: Diploma) =
+        match diploma with
+        | A -> 1
+        | B -> 10
+        | _ -> 15

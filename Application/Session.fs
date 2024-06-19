@@ -13,8 +13,8 @@ let filterSessionsByName name sessions =
     
 let filterSessionsByEligibility sessions diploma =
     sessions
-    |> Seq.filter (fun session -> session.Deep || Session.shallowOk diploma)
-    |> Seq.filter (fun session -> session.Minutes >= Session.minMinutes diploma)
+    |> Seq.filter (fun session -> session.Deep || Diploma.shallowOk diploma)
+    |> Seq.filter (fun session -> session.Minutes >= Diploma.minMinutes diploma)
     
 let makeSession (_, deep, date, minutes) =
     Session.make deep date minutes

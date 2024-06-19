@@ -32,14 +32,3 @@ module Session =
             { Deep = get.Required.Field "deep" Decode.bool
               Date = get.Required.Field "date" Decode.datetime
               Minutes = get.Required.Field "amount" Decode.int })
-        
-    let shallowOk (diploma: Diploma) =
-        match diploma with
-        | A -> true
-        | _ -> false
-        
-    let minMinutes (diploma: Diploma) =
-        match diploma with
-        | A -> 1
-        | B -> 10
-        | _ -> 15
