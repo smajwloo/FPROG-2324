@@ -199,5 +199,5 @@ let routes: HttpHandler =
           GET >=> routef "/candidate/%s/session/%s" getEligibleSessions
           GET >=> routef "/candidate/%s/session/%s/total" getTotalEligibleMinutes
           POST >=> routef "/candidate/%s/diploma/%s" awardDiploma
-          POST >=> route "/guardian" >=> addGuardian
-          GET >=> route "/guardian" >=> getGuardians ]
+          GET >=> route "/guardian" >=> getGuardians
+          POST >=> route "/guardian" >=> addGuardian ]
