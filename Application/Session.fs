@@ -19,13 +19,23 @@ let filterSessionsByEligibility sessions diploma =
 let makeSession (_, deep, date, minutes) =
     Session.make deep date minutes
     
-let getSessions (sessionStore: ISessionStore) (name: string) =
-    let sessions = sessionStore.getSessions ()
+let handleSessionSequence sessions =
     sessions
-    |> filterSessionsByName name
     |> Seq.map makeSession
     |> Seq.choose convertResultToOption
-    |> sequenceIsEmpty $"No sessions found for {name}."
+    |> sequenceIsEmpty "No sessions found."
+    
+let getSessions (sessionStore: ISessionStore) =
+    sessionStore.getSessions ()
+    
+let getAllCandidatesSessions (sessionStore: ISessionStore) =
+    getSessions sessionStore
+    |> handleSessionSequence
+    
+let getSessionsOfCandidate (sessionStore: ISessionStore) (name: string) =
+    getSessions sessionStore
+    |> filterSessionsByName name
+    |> handleSessionSequence
 
 let getEligibleSessions sessions diploma =
     let diploma = Diploma.make diploma
