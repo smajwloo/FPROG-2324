@@ -20,7 +20,10 @@ module Candidate =
     let make rawName rawDateOfBirth rawGuardianId rawDiploma =
         rawName
         |> Validator.validateName
-        |> Result.map (fun _ -> { Name = rawName; DateOfBirth = rawDateOfBirth; GuardianId = rawGuardianId; Diploma = rawDiploma })
+        |> Result.map (fun _ -> { Name = rawName
+                                  DateOfBirth = rawDateOfBirth
+                                  GuardianId = rawGuardianId
+                                  Diploma = rawDiploma })
     
     let encode: Encoder<Candidate> =
         fun candidate ->

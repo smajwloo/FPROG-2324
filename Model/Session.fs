@@ -17,7 +17,9 @@ module Session =
     let make rawDeep rawDate rawMinutes =
         rawMinutes
         |> Validator.validateSessionLength
-        |> Result.map (fun _ -> { Deep = rawDeep; Date = rawDate; Minutes = rawMinutes })
+        |> Result.map (fun _ -> { Deep = rawDeep
+                                  Date = rawDate
+                                  Minutes = rawMinutes })
     
     let encode: Encoder<Session> =
         fun session ->

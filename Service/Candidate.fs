@@ -8,6 +8,21 @@ open Model.Candidate
 open Giraffe
 open Thoth.Json.Giraffe
 
+let validateGuardian guardianStore candidate existingCandidates =
+    let guardian = Guardian.getGuardian guardianStore candidate.GuardianId existingCandidates
+    match guardian with
+    | None -> Error "Guardian does not exist."
+    | Some _ -> Ok existingCandidates
+
+let addCandidateToStore candidateStore candidate existingCandidates =
+    let filteredCandidates = Candidate.filterCandidateByGuardianId candidate.GuardianId candidate.Name existingCandidates
+    Candidate.addCandidate candidateStore candidate filteredCandidates
+
+let handleAddCandidateResult result next ctx =
+    match result with
+    | Error errorMessage -> RequestErrors.BAD_REQUEST errorMessage next ctx
+    | Ok _ -> text "Candidate added successfully" next ctx
+    
 let getCandidates: HttpHandler =
     fun next ctx ->
         task {
@@ -26,31 +41,27 @@ let getCandidate (name: string) : HttpHandler =
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
             | Ok candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
         }
-        
+
 let addCandidate: HttpHandler =
     fun next ctx ->
         task {
-            let! candidate = ThothSerializer.ReadBody ctx Candidate.decode
+            let! candidateResult = ThothSerializer.ReadBody ctx Candidate.decode
             
-            match candidate with
+            match candidateResult with
             | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
             | Ok candidate ->
                 let candidateStore = ctx.GetService<ICandidateStore>()
                 let guardianStore = ctx.GetService<IGuardianStore>()
-            
+
                 let existingCandidates = Candidate.getCandidates candidateStore
-                let guardian = Guardian.getGuardian guardianStore candidate.GuardianId existingCandidates
-                
-                match guardian with
-                | None -> return! RequestErrors.BAD_REQUEST "Guardian does not exist." next ctx
-                | Some _ ->
-                    let filteredCandidates = Candidate.filterCandidateByGuardianId candidate.GuardianId candidate.Name existingCandidates
-                    let result = Candidate.addCandidate candidateStore candidate filteredCandidates
-                    match result with
-                    | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                    | Ok _ -> return! text "Candidate added successfully" next ctx
+                let result = validateGuardian guardianStore candidate existingCandidates
+                match result with
+                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                | Ok existingCandidates ->
+                    let result = addCandidateToStore candidateStore candidate existingCandidates
+                    return! handleAddCandidateResult result next ctx
         }
-        
+
 let isQualifiedForDiploma eligibleSessions diploma =
     match eligibleSessions with
         | Error _ -> None

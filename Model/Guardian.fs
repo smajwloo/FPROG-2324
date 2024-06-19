@@ -16,7 +16,9 @@ module Guardian =
         rawId
         |> Validator.validateId
         |> Result.bind (fun _ -> Validator.validateName rawName)
-        |> Result.map (fun _ -> { Id = rawId; Name = rawName; Candidates = candidates })
+        |> Result.map (fun _ -> { Id = rawId
+                                  Name = rawName
+                                  Candidates = candidates })
     
     let encode: Encoder<Guardian> =
         fun guardian ->
