@@ -40,8 +40,10 @@ let addCandidate: HttpHandler =
             | Ok candidate ->
                 let candidateStore = ctx.GetService<ICandidateStore>()
                 let guardianStore = ctx.GetService<IGuardianStore>()
+            
+                let candidates = Candidate.getCandidates candidateStore
+                let guardian = Guardian.getGuardian guardianStore candidate.GuardianId candidates
                 
-                let guardian = Guardian.getGuardian guardianStore candidate.GuardianId
                 match guardian with
                 | None -> return! RequestErrors.BAD_REQUEST "Guardian does not exist." next ctx
                 | Some _ ->
@@ -150,7 +152,10 @@ let getGuardians: HttpHandler =
     fun next ctx ->
         task {
             let guardianStore = ctx.GetService<IGuardianStore>()
-            let guardiansResult = Guardian.getGuardians guardianStore
+            let candidateStore = ctx.GetService<ICandidateStore>()
+            
+            let candidates = Candidate.getCandidates candidateStore
+            let guardiansResult = Guardian.getGuardians guardianStore candidates
             
             match guardiansResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
