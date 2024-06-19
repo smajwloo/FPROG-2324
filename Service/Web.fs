@@ -26,8 +26,8 @@ let getCandidate (name: string) : HttpHandler =
             let candidate = Candidate.getCandidate candidateStore name
             
             match candidate with
-            | None -> return! RequestErrors.NOT_FOUND "Candidate not found." next ctx
-            | Some candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
         }
         
 let addCandidate: HttpHandler =
@@ -60,10 +60,16 @@ let addSession (name: string) : HttpHandler =
             | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
             | Ok session ->
                 let sessionStore = ctx.GetService<ISessionStore>()
-                let result = Session.addSession sessionStore name session
-                match result with
-                | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
-                | Ok _ -> return! text "OK" next ctx
+                let candidateStore = ctx.GetService<ICandidateStore>()
+                
+                let candidate = Candidate.getCandidate candidateStore name
+                match candidate with
+                | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+                | Ok _ ->                
+                    let result = Session.addSession sessionStore name session
+                    match result with
+                    | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
+                    | Ok _ -> return! text "OK" next ctx
         }
 
 let getTotalEligibleMinutes (name: string, diploma: string) : HttpHandler =
@@ -159,8 +165,8 @@ let awardDiploma (name: string, diploma: string) : HttpHandler =
             let candidate = Candidate.getCandidate candidateStore name
             
             match candidate with
-            | None -> return! RequestErrors.NOT_FOUND "Candidate not found." next ctx
-            | Some candidate ->
+            | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
+            | Ok candidate ->
                 let sessionsResult = Session.getSessions sessionStore name
                 
                 match sessionsResult with

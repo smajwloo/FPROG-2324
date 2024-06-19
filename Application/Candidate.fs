@@ -27,9 +27,13 @@ let getCandidates (candidateStore: ICandidateStore) =
     
 let getCandidate (candidateStore: ICandidateStore) (name: string) =
     let candidate = candidateStore.getCandidate name
-    candidate
-    |> Option.map makeCandidate
-    |> Option.bind convertResultToOption
+    match candidate with
+    | None -> Error "Candidate not found."
+    | Some candidate ->
+        match makeCandidate candidate with
+        | Error errorMessage -> Error (errorMessage.ToString ())
+        | Ok candidate -> Ok candidate
+   
     
 let addCandidate (candidateStore: ICandidateStore) (candidate: Candidate) =
     let candidate = Candidate.make candidate.Name candidate.DateOfBirth candidate.GuardianId candidate.Diploma
