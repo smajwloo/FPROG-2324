@@ -4,9 +4,29 @@ open Application
 open Application.Candidate
 open Application.Guardian
 open Application.Session
+open Model.Diploma
 open Model.Candidate
 open Giraffe
 open Thoth.Json.Giraffe
+open Thoth.Json.Net
+    
+let encodeDiploma: Encoder<Diploma> =
+    (fun (Diploma diploma) -> Encode.string diploma)
+    
+let encodeCandidate: Encoder<Candidate> =
+    fun candidate ->
+        Encode.object
+            [ "name", Encode.string candidate.Name
+              "date_of_birth", Encode.datetime candidate.DateOfBirth
+              "guardian_id", Encode.string candidate.GuardianId
+              "diploma", Encode.option encodeDiploma candidate.Diploma]
+
+let decodeCandidate: Decoder<Candidate> =
+    Decode.object (fun get ->
+        { Name = get.Required.Field "name" Decode.string
+          DateOfBirth = get.Required.Field "date_of_birth" Decode.datetime
+          GuardianId = get.Required.Field "guardian_id" Decode.string
+          Diploma = None })
 
 let validateGuardian guardianStore candidate existingCandidates =
     let guardian = Guardian.getGuardian guardianStore candidate.GuardianId existingCandidates
@@ -28,7 +48,7 @@ let getCandidates: HttpHandler =
         task {
             let candidateStore = ctx.GetService<ICandidateStore>()
             let candidates = Candidate.getCandidates candidateStore
-            return! ThothSerializer.RespondJsonSeq candidates Candidate.encode next ctx
+            return! ThothSerializer.RespondJsonSeq candidates encodeCandidate next ctx
         }
 
 let isQualifiedForDiploma eligibleSessions diploma =
@@ -70,13 +90,13 @@ let getCandidate (name: string) : HttpHandler =
             
             match candidate with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
-            | Ok candidate -> return! ThothSerializer.RespondJson candidate Candidate.encode next ctx
+            | Ok candidate -> return! ThothSerializer.RespondJson candidate encodeCandidate next ctx
         }
 
 let addCandidate: HttpHandler =
     fun next ctx ->
         task {
-            let! candidateResult = ThothSerializer.ReadBody ctx Candidate.decode
+            let! candidateResult = ThothSerializer.ReadBody ctx decodeCandidate
             
             match candidateResult with
             | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
@@ -128,5 +148,5 @@ let getQualifiedCandidatesForDiploma (diploma: string) : HttpHandler =
                 match qualifyingCandidates with
                 | [] -> return! RequestErrors.NOT_FOUND "No candidates qualify for that diploma." next ctx
                 | qualifyingCandidates ->
-                    return! ThothSerializer.RespondJsonSeq qualifyingCandidates Candidate.encode next ctx
+                    return! ThothSerializer.RespondJsonSeq qualifyingCandidates encodeCandidate next ctx
         }

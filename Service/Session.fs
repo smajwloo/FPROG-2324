@@ -8,10 +8,23 @@ open Giraffe
 open Thoth.Json.Net
 open Thoth.Json.Giraffe
 
+let encodeSession: Encoder<Session> =
+    fun session ->
+        Encode.object
+            [ "deep", Encode.bool session.Deep
+              "date", Encode.datetime session.Date
+              "amount", Encode.int session.Minutes ]
+
+let decodeSession: Decoder<Session> =
+    Decode.object (fun get ->
+        { Deep = get.Required.Field "deep" Decode.bool
+          Date = get.Required.Field "date" Decode.datetime
+          Minutes = get.Required.Field "amount" Decode.int })
+
 let addSession (name: string) : HttpHandler =
     fun next ctx ->
         task {
-            let! session = ThothSerializer.ReadBody ctx Session.decode
+            let! session = ThothSerializer.ReadBody ctx decodeSession
 
             match session with
             | Error errorMessage -> return! RequestErrors.BAD_REQUEST errorMessage next ctx
@@ -68,7 +81,7 @@ let getSessions (name: string) : HttpHandler =
             
             match sessionsResult with
             | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
-            | Ok sessions -> return! ThothSerializer.RespondJsonSeq sessions Session.encode next ctx
+            | Ok sessions -> return! ThothSerializer.RespondJsonSeq sessions encodeSession next ctx
         }
 
 let getEligibleSessions (name: string, diploma: string) : HttpHandler =
@@ -84,5 +97,5 @@ let getEligibleSessions (name: string, diploma: string) : HttpHandler =
                 
                 match eligibleSessionsResult with
                 | Error errorMessage -> return! RequestErrors.NOT_FOUND errorMessage next ctx
-                | Ok eligibleSessions -> return! ThothSerializer.RespondJsonSeq eligibleSessions Session.encode next ctx
+                | Ok eligibleSessions -> return! ThothSerializer.RespondJsonSeq eligibleSessions encodeSession next ctx
         }

@@ -20,19 +20,6 @@ module Diploma =
         | "C" -> Some C
         | _ -> None
         
-    let encode: Encoder<Diploma> =
-        (fun (Diploma diploma) -> Encode.string diploma)
-       
-    let decode: Decoder<Diploma> =
-        Decode.string
-        |> Decode.andThen (fun diploma ->
-            match diploma with
-            | "A" -> Decode.succeed A
-            | "B" -> Decode.succeed B
-            | "C" -> Decode.succeed C
-            | _ -> Decode.fail "Invalid diploma"
-        )
-        
     let shallowOk (diploma: Diploma) =
         match diploma with
         | A -> true
